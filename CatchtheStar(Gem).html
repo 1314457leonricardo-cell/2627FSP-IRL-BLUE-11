@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch the Star ⭐ - Space Edition</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at center, #1a1c4b 0%, #08091a 100%);
+        color: white;
+        overflow: hidden;
+    }
+
+    .game-wrap {
+        width: min(94vw, 560px);
+        text-align: center;
+        position: relative;
+    }
+
+    h1 {
+        margin: 0 0 4px;
+        font-size: clamp(28px, 6vw, 40px);
+        background: linear-gradient(180deg, #fff 30%, #ffe66d 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 20px rgba(255, 230, 109, 0.4);
+    }
+
+    .subtitle {
+        margin: 0 0 12px;
+        opacity: .8;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .hud {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .box {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+
+    .box span {
+        display: block;
+        font-size: 18px;
+        color: #ffe66d;
+        margin-top: 2px;
+    }
+
+    #game {
+        position: relative;
+        height: min(65vh, 580px);
+        min-height: 420px;
+        overflow: hidden;
+        border-radius: 24px;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        background:
+            radial-gradient(circle at 15% 30%, rgba(255, 255, 255, 0.15) 1px, transparent 2px),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.2) 1px, transparent 2px),
+            radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.12) 1px, transparent 2px),
+            linear-gradient(#0c112b, #040612);
+        background-size: 120px 120px, 180px 180px, 90px 90px, auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    #game.shake {
+        animation: shake 0.3s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-8px); }
+        40%, 80% { transform: translateX(8px); }
+    }
+
+    .item {
+        position: absolute;
+        font-size: 32px;
+        user-select: none;
+        will-change: transform, top;
+        transition: transform 0.1s linear;
+    }
+
+    .star { filter: drop-shadow(0 0 10px #ffe66d); }
+    .trash { filter: drop-shadow(0 0 8px #ff4757); }
+
+    .basket {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        width: 85px;
+        height: 45px;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        user-select: none;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    }
+
+    /* Floating Score Popup */
+    .popup {
+        position: absolute;
+        font-weight: bold;
+        font-size: 20px;
+        pointer-events: none;
+        animation: floatUp 0.8s ease-out forwards;
+        z-index: 5;
+    }
+    .popup.positive { color: #ffe66d; text-shadow: 0 0 6px #ffe66d; }
+    .popup.negative { color: #ff4757; text-shadow: 0 0 6px #ff4757; }
+
+    @keyframes floatUp {
+        0% { opacity: 1; transform: translateY(0) scale(1); }
+        100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+    }
+
+    button {
+        border: none;
+        border-radius: 14px;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        background: linear-gradient(180deg, #ffe66d 0%, #e6be22 100%);
+        color: #171717;
+        box-shadow: 0 4px 15px rgba(255, 230, 109, 0.4);
+        transition: all 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    button:active { transform: translateY(2px); }
+
+    .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: rgba(4, 6, 18, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 10;
+        padding: 20px;
+    }
+
+    .overlay h2 {
+        font-size: 32px;
+        margin: 0 0 10px;
+        color: #fff;
+    }
+
+    .overlay p {
+        max-width: 380px;
+        line-height: 1.5;
+        opacity: .9;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    /* Difficulty Selection */
+    .difficulty-wrap {
+        margin-bottom: 20px;
+    }
+    .difficulty-wrap label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #ffe66d;
+    }
+    .diff-btn-group {
+        display: flex;
+        gap: 8px;
+    }
+    .diff-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: none;
+        border-radius: 10px;
+    }
+    .diff-btn.active {
+        background: #ffe66d;
+        color: #111;
+        border-color: #ffe66d;
+        box-shadow: 0 0 10px rgba(255, 230, 109, 0.5);
+    }
+
+    .hidden { display: none !important; }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 12px;
+    }
+
+    .control-btn {
+        margin: 0;
+        width: 70px;
+        height: 52px;
+        padding: 0;
+        font-size: 24px;
+        background: rgba(255,255,255,0.08);
+        color: white;
+        box-shadow: none;
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(5px);
+    }
+
+    .message {
+        min-height: 24px;
+        margin-top: 10px;
+        font-weight: bold;
+        color: #ffe66d;
+        font-size: 15px;
+    }
+</style>
+</head>
+<body>
+
+<div class="game-wrap">
+    <h1>Catch the Star ⭐</h1>
+    <p class="subtitle">Tangkap bintang, hindari sampah ruang angkasa!</p>
+
+    <div class="hud">
+        <div class="box">Skor<span id="score">0</span></div>
+        <div class="box">Nyawa<span id="lives">❤️❤️❤️</span></div>
+        <div class="box">Rekor<span id="highscore">0</span></div>
+    </div>
+
+    <div id="game">
+        <div id="overlay" class="overlay">
+            <h2 id="overlayTitle">Catch the Star ⭐</h2>
+            <p id="overlayDesc">
+                Tangkap ⭐ (+1) & 🌟 (+2).<br>
+                <b>Awas!</b> Hindari 🪨 🛰️ 🗑️ 💣 (-1 Nyawa)!
+            </p>
+
+            <div class="difficulty-wrap">
+                <label>Pilih Tingkat Kesulitan:</label>
+                <div class="diff-btn-group">
+                    <button class="diff-btn" data-diff="easy">Mudah 🟢</button>
+                    <button class="diff-btn active" data-diff="medium">Sedang 🟡</button>
+                    <button class="diff-btn" data-diff="hard">Sulit 🔴</button>
+                </div>
+            </div>
+
+            <button id="startBtn">Mulai Bermain 🚀</button>
+        </div>
+
+        <div id="basket" class="basket">🧺</div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="leftBtn">⬅️</button>
+        <button class="control-btn" id="rightBtn">➡️</button>
+    </div>
+
+    <div class="message" id="message"></div>
+</div>
+
+<script>
+// --- Audio Synthesizer (SFX Sederhana) ---
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function playSound(type) {
+    if (!audioCtx) audioCtx = new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    const now = audioCtx.currentTime;
+    
+    if (type === 'star') {
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+    } else if (type === 'bonus') {
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.exponentialRampToValueAtTime(1174.66, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    } else if (type === 'trash') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(50, now + 0.25);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+    }
+}
+
+// --- Elemen DOM ---
+const game = document.getElementById("game");
+const basket = document.getElementById("basket");
+const overlay = document.getElementById("overlay");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayDesc = document.getElementById("overlayDesc");
+const startBtn = document.getElementById("startBtn");
+const scoreEl = document.getElementById("score");
+const livesEl = document.getElementById("lives");
+const highscoreEl = document.getElementById("highscore");
+const message = document.getElementById("message");
+const diffBtns = document.querySelectorAll(".diff-btn");
+
+// --- Variable State Game ---
+let score = 0;
+let lives = 3;
+let selectedDifficulty = "medium";
+let highscore = Number(localStorage.getItem("catchStarHighscore") || 0);
+let basketX = 50;
+let playing = false;
+let items = [];
+let lastSpawn = 0;
+let animationId;
+let keys = { left: false, right: false };
+
+// --- Pengaturan Kesulitan ---
+const diffSettings = {
+    easy:   { baseSpeed: 1.6, speedInc: 0.02, spawnDelay: 900, trashRatio: 0.15, basketSpeed: 1.1 },
+    medium: { baseSpeed: 2.3, speedInc: 0.035, spawnDelay: 750, trashRatio: 0.30, basketSpeed: 1.0 },
+    hard:   { baseSpeed: 3.2, speedInc: 0.05, spawnDelay: 550, trashRatio: 0.45, basketSpeed: 0.9 }
+};
+
+let currentConfig = diffSettings.medium;
+highscoreEl.textContent = highscore;
+
+// Event Pilihan Kesulitan
+diffBtns.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+        diffBtns.forEach(b => b.classList.remove("active"));
+        e.target.classList.add("active");
+        selectedDifficulty = e.target.dataset.diff;
+    });
+});
+
+function startGame() {
+    currentConfig = diffSettings[selectedDifficulty];
+    score = 0;
+    lives = 3;
+    basketX = 50;
+    
+    // Hapus item tersisa
+    items.forEach(item => item.el.remove());
+    items = [];
+    
+    playing = true;
+    overlay.classList.add("hidden");
+    message.textContent = "";
+    updateHUD();
+    updateBasket();
+    
+    cancelAnimationFrame(animationId);
+    lastSpawn = performance.now();
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+    playing = false;
+    cancelAnimationFrame(animationId);
+
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem("catchStarHighscore", highscore);
+    }
+
+    highscoreEl.textContent = highscore;
+    overlayTitle.textContent = "Game Over 💥";
+    overlayDesc.innerHTML = `Skor kamu: <b>${score}</b> ⭐<br>Rekor Terbaik (${selectedDifficulty.toUpperCase()}): <b>${highscore}</b> 🏆`;
+    startBtn.textContent = "Main Lagi 🔄";
+    overlay.classList.remove("hidden");
+}
+
+function updateHUD() {
+    scoreEl.textContent = score;
+    livesEl.textContent = "❤️".repeat(Math.max(0, lives));
+    highscoreEl.textContent = highscore;
+}
+
+function updateBasket() {
+    basket.style.left = basketX + "%";
+}
+
+function triggerShake() {
+    game.classList.remove("shake");
+    void game.offsetWidth; // trigger reflow
+    game.classList.add("shake");
+}
+
+function createPopup(text, x, y, isPositive) {
+    const pop = document.createElement("div");
+    pop.className = `popup ${isPositive ? 'positive' : 'negative'}`;
+    pop.textContent = text;
+    pop.style.left = x + "px";
+    pop.style.top = y + "px";
+    game.appendChild(pop);
+    setTimeout(() => pop.remove(), 800);
+}
+
+function spawnItem() {
+    const el = document.createElement("div");
+    const isTrash = Math.random() < currentConfig.trashRatio;
+    
+    let type = "star";
+    let symbol = "⭐";
+    let points = 1;
+
+    if (isTrash) {
+        type = "trash";
+        const trashTypes = ["🪨", "🛰️", "🗑️", "💣"];
+        symbol = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+        points = -1;
+    } else {
+        if (Math.random() < 0.2) {
+            symbol = "🌟";
+            points = 2;
+            type = "bonus";
+        }
+    }
+
+    el.className = `item ${type === 'trash' ? 'trash' : 'star'}`;
+    el.textContent = symbol;
+
+    const x = Math.random() * 86 + 7;
+    el.style.left = x + "%";
+    el.style.top = "-45px";
+
+    game.appendChild(el);
+
+    const speed = (currentConfig.baseSpeed + score * currentConfig.speedInc) * (0.85 + Math.random() * 0.3);
+
+    items.push({
+        el,
+        type,
+        points,
+        x,
+        y: -45,
+        speed
+    });
+}
+
+function gameLoop(time) {
+    if (!playing) return;
+
+    // Gerakan Keranjang
+    const step = 1.0 * currentConfig.basketSpeed;
+    if (keys.left) basketX -= step;
+    if (keys.right) basketX += step;
+    basketX = Math.max(8, Math.min(92, basketX));
+    updateBasket();
+
+    // Spawn Item
+    const dynamicDelay = Math.max(300, currentConfig.spawnDelay - score * 8);
+    if (time - lastSpawn > dynamicDelay) {
+        spawnItem();
+        lastSpawn = time;
+    }
+
+    const basketRect = basket.getBoundingClientRect();
+    const gameRect = game.getBoundingClientRect();
+
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.y += item.speed;
+        item.el.style.top = item.y + "px";
+
+        const itemRect = item.el.getBoundingClientRect();
+
+        // 1. Tertangkap Keranjang
+        if (
+            itemRect.bottom >= basketRect.top + 8 &&
+            itemRect.top <= basketRect.bottom &&
+            itemRect.right >= basketRect.left + 5 &&
+            itemRect.left <= basketRect.right - 5
+        ) {
+            const relativeX = itemRect.left - gameRect.left;
+            const relativeY = basketRect.top - gameRect.top;
+
+            if (item.type === "trash") {
+                lives--;
+                playSound('trash');
+                triggerShake();
+                createPopup("-1 ❤️", relativeX, relativeY, false);
+                message.textContent = "💥 Kena Sampah Luar Angkasa!";
+            } else {
+                score += item.points;
+                playSound(item.type === "bonus" ? 'bonus' : 'star');
+                createPopup(`+${item.points}`, relativeX, relativeY, true);
+                message.textContent = item.type === "bonus" ? "🌟 Bintang Spesial! +2" : "✨ Mantap!";
+            }
+
+            item.el.remove();
+            items.splice(i, 1);
+            updateHUD();
+
+            if (lives <= 0) {
+                endGame();
+                return;
+            }
+            continue;
+        }
+
+        // 2. Terlewat di Bawah
+        if (item.y > game.clientHeight) {
+            if (item.type !== "trash") {
+                // Bintang terlewat mengurangi nyawa
+                lives--;
+                updateHUD();
+                message.textContent = "❌ Bintang Terlewat!";
+                if (lives <= 0) {
+                    item.el.remove();
+                    items.splice(i, 1);
+                    endGame();
+                    return;
+                }
+            }
+            item.el.remove();
+            items.splice(i, 1);
+        }
+    }
+
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+// Kontrol Keyboard
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") keys.left = true;
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") keys.right = true;
+});
+
+document.addEventListener("keyup", e => {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") keys.left = false;
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") keys.right = false;
+});
+
+// Kontrol Tombol Sentuh / Klik
+function setupHoldButton(button, direction) {
+    const down = e => { e.preventDefault(); keys[direction] = true; };
+    const up = e => { e.preventDefault(); keys[direction] = false; };
+
+    button.addEventListener("mousedown", down);
+    button.addEventListener("mouseup", up);
+    button.addEventListener("mouseleave", up);
+    button.addEventListener("touchstart", down, {passive:false});
+    button.addEventListener("touchend", up, {passive:false});
+}
+
+setupHoldButton(document.getElementById("leftBtn"), "left");
+setupHoldButton(document.getElementById("rightBtn"), "right");
+
+startBtn.addEventListener("click", startGame);
+</script>
+
+</body>
+</html>
