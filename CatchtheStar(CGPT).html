@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Star Catcher</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(#07152f, #102b55, #07152f);
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-wrap {
+    width: min(950px, 96vw);
+}
+
+/* MENU */
+.menu,
+.game-panel {
+    background: rgba(4, 12, 30, 0.92);
+    border: 2px solid #4776b8;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 15px 50px rgba(0,0,0,.4);
+}
+
+.menu {
+    text-align: center;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 42px;
+}
+
+.subtitle {
+    color: #b9d7ff;
+    margin-bottom: 24px;
+}
+
+.modes {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+button {
+    border: none;
+    border-radius: 12px;
+    padding: 13px 24px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+.easy {
+    background: #7ee787;
+    color: #18233b;
+}
+
+.normal {
+    background: #ffd34d;
+    color: #18233b;
+}
+
+.hard {
+    background: #ff7b72;
+    color: #18233b;
+}
+
+.hint {
+    margin-top: 18px;
+    color: #9eb5d7;
+    font-size: 14px;
+}
+
+/* GAME */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    background: #102343;
+    padding: 9px 13px;
+    border-radius: 10px;
+}
+
+#canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    background: #081735;
+    border: 1px solid #35598d;
+    touch-action: none;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 12px;
+}
+
+.control-btn {
+    width: 110px;
+    padding: 12px;
+    background: #294d7e;
+    color: white;
+}
+
+#message {
+    text-align: center;
+    margin-top: 12px;
+    color: #c5d8f4;
+}
+
+.hidden {
+    display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game-wrap">
+
+    <!-- MENU UTAMA -->
+    <div id="menu" class="menu">
+
+        <h1>🌟 Star Catcher</h1>
+
+        <div class="subtitle">
+            Tangkap bintang jatuh dan hindari gangguan!
+        </div>
+
+        <div class="modes">
+
+            <button class="easy"
+                onclick="startGame('easy')">
+                EASY
+            </button>
+
+            <button class="normal"
+                onclick="startGame('normal')">
+                NORMAL
+            </button>
+
+            <button class="hard"
+                onclick="startGame('hard')">
+                HARD
+            </button>
+
+        </div>
+
+        <div class="hint">
+            Gerakkan keranjang dengan ← → atau A / D.<br>
+            Tangkap ⭐ untuk mendapat poin.<br>
+            Hindari 🗑️ dan 👟 karena akan mengurangi nyawa.
+        </div>
+
+    </div>
+
+
+    <!-- AREA GAME -->
+    <div id="gamePanel" class="game-panel hidden">
+
+        <div class="topbar">
+
+            <div class="stats">
+
+                <div class="stat">
+                    Mode:
+                    <b id="modeText">NORMAL</b>
+                </div>
+
+                <div class="stat">
+                    ⭐ Skor:
+                    <b id="score">0</b>
+                </div>
+
+                <div class="stat">
+                    ❤️ Nyawa:
+                    <b id="lives">3</b>
+                </div>
+
+            </div>
+
+            <button onclick="backToMenu()">
+                Menu
+            </button>
+
+        </div>
+
+
+        <canvas
+            id="canvas"
+            width="900"
+            height="560">
+        </canvas>
+
+
+        <div class="controls">
+
+            <button
+                class="control-btn"
+                id="leftBtn">
+                ◀ Kiri
+            </button>
+
+            <button
+                class="control-btn"
+                id="rightBtn">
+                Kanan ▶
+            </button>
+
+        </div>
+
+
+        <div id="message">
+            Tangkap bintang sebanyak mungkin!
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+
+/* PENGATURAN SETIAP MODE */
+
+const settings = {
+
+    easy: {
+        speed: 2.2,
+        spawn: 900,
+        badChance: 0.22
+    },
+
+    normal: {
+        speed: 3.3,
+        spawn: 700,
+        badChance: 0.32
+    },
+
+    hard: {
+        speed: 4.7,
+        spawn: 520,
+        badChance: 0.42
+    }
+
+};
+
+
+let mode = "normal";
+
+let score = 0;
+
+let lives = 3;
+
+let running = false;
+
+let objects = [];
+
+let keys = {};
+
+let lastSpawn = 0;
+
+let animationId = null;
+
+
+/* PEMAIN */
+
+const player = {
+
+    x: canvas.width / 2 - 45,
+
+    y: canvas.height - 55,
+
+    w: 90,
+
+    h: 28,
+
+    speed: 7
+
+};
+
+
+/* MEMULAI GAME */
+
+function startGame(selectedMode) {
+
+    mode = selectedMode;
+
+    score = 0;
+
+    lives = 3;
+
+    objects = [];
+
+    running = true;
+
+    player.x =
+        canvas.width / 2 -
+        player.w / 2;
+
+
+    document
+        .getElementById("menu")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("gamePanel")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("modeText")
+        .textContent =
+        mode.toUpperCase();
+
+
+    document
+        .getElementById("message")
+        .textContent =
+        "Tangkap bintang sebanyak mungkin!";
+
+
+    updateStats();
+
+
+    cancelAnimationFrame(animationId);
+
+    lastSpawn = performance.now();
+
+    animationId =
+        requestAnimationFrame(loop);
+}
+
+
+/* KEMBALI KE MENU */
+
+function backToMenu() {
+
+    running = false;
+
+    cancelAnimationFrame(animationId);
+
+    document
+        .getElementById("gamePanel")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("menu")
+        .classList.remove("hidden");
+}
+
+
+/* UPDATE SKOR DAN NYAWA */
+
+function updateStats() {
+
+    document
+        .getElementById("score")
+        .textContent = score;
+
+
+    document
+        .getElementById("lives")
+        .textContent = lives;
+}
+
+
+/* MEMBUAT OBJEK JATUH */
+
+function spawnObject() {
+
+    const s = settings[mode];
+
+    const bad =
+        Math.random() < s.badChance;
+
+
+    let type;
+
+
+    if (bad) {
+
+        type =
+            Math.random() < 0.5
+            ? "trash"
+            : "shoe";
+
+    } else {
+
+        type = "star";
+
+    }
+
+
+    const size =
+        bad ? 34 : 30;
+
+
+    objects.push({
+
+        x:
+            Math.random() *
+            (canvas.width - size),
+
+        y: -size,
+
+        size: size,
+
+        type: type,
+
+        speed:
+            s.speed *
+            (0.8 + Math.random() * 0.55),
+
+        rotation:
+            Math.random() *
+            Math.PI * 2
+
+    });
+
+}
+
+
+/* BACKGROUND */
+
+function drawBackground() {
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    /* BINTANG DI LANGIT */
+
+    ctx.fillStyle =
+        "rgba(255,255,255,.65)";
+
+
+    for (let i = 0; i < 70; i++) {
+
+        const x =
+            (i * 137) %
+            canvas.width;
+
+        const y =
+            (i * 83) %
+            canvas.height;
+
+        const r =
+            (i % 3) + 0.5;
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            y,
+            r,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+    }
+
+
+    /* BULAN */
+
+    ctx.fillStyle = "#f4e8b5";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        80,
+        75,
+        35,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle = "#081735";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        94,
+        64,
+        35,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+}
+
+
+/* GAMBAR KERANJANG */
+
+function drawPlayer() {
+
+    ctx.fillStyle = "#d89b52";
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        player.x,
+        player.y,
+        player.w,
+        player.h,
+        8
+    );
+
+    ctx.fill();
+
+
+    /* PEGANGAN */
+
+    ctx.strokeStyle = "#ffd98c";
+
+    ctx.lineWidth = 5;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        player.x + player.w / 2,
+        player.y + 4,
+        28,
+        Math.PI,
+        0
+    );
+
+    ctx.stroke();
+
+
+    ctx.fillStyle = "#8c5a2b";
+
+    ctx.fillRect(
+        player.x + 8,
+        player.y + 7,
+        player.w - 16,
+        5
+    );
+
+}
+
+
+/* GAMBAR OBJEK */
+
+function drawObject(o) {
+
+    ctx.save();
+
+
+    ctx.translate(
+        o.x + o.size / 2,
+        o.y + o.size / 2
+    );
+
+
+    ctx.rotate(o.rotation);
+
+
+    ctx.textAlign = "center";
+
+    ctx.textBaseline = "middle";
+
+    ctx.font =
+        `${o.size}px Arial`;
+
+
+    if (o.type === "star") {
+
+        ctx.shadowColor =
+            "#fff2a6";
+
+        ctx.shadowBlur = 15;
+
+        ctx.fillText(
+            "⭐",
+            0,
+            0
+        );
+
+    }
+
+    else if (o.type === "trash") {
+
+        ctx.shadowBlur = 0;
+
+        ctx.fillText(
+            "🗑️",
+            0,
+            0
+        );
+
+    }
+
+    else {
+
+        ctx.shadowBlur = 0;
+
+        ctx.fillText(
+            "👟",
+            0,
+            0
+        );
+
+    }
+
+
+    ctx.restore();
+
+}
+
+
+/* CEK TABRAKAN */
+
+function isColliding(o) {
+
+    return (
+
+        o.x <
+        player.x + player.w
+
+        &&
+
+        o.x + o.size >
+        player.x
+
+        &&
+
+        o.y <
+        player.y + player.h
+
+        &&
+
+        o.y + o.size >
+        player.y
+
+    );
+
+}
+
+
+/* GAME OVER */
+
+function gameOver() {
+
+    running = false;
+
+
+    document
+        .getElementById("message")
+        .textContent =
+        `💀 Game Over! Skor kamu: ${score}`;
+
+}
+
+
+/* GAME LOOP */
+
+function loop(now) {
+
+    if (!running)
+        return;
+
+
+    const s = settings[mode];
+
+
+    /* GERAK PEMAIN */
+
+    if (
+        keys["ArrowLeft"] ||
+        keys["a"] ||
+        keys["A"]
+    ) {
+
+        player.x -= player.speed;
+
+    }
+
+
+    if (
+        keys["ArrowRight"] ||
+        keys["d"] ||
+        keys["D"]
+    ) {
+
+        player.x += player.speed;
+
+    }
+
+
+    /* BATAS LAYAR */
+
+    player.x =
+        Math.max(
+            0,
+            Math.min(
+                canvas.width - player.w,
+                player.x
+            )
+        );
+
+
+    /* SPAWN */
+
+    if (
+        now - lastSpawn >
+        s.spawn
+    ) {
+
+        spawnObject();
+
+        lastSpawn = now;
+
+    }
+
+
+    /* UPDATE OBJEK */
+
+    for (
+        let i = objects.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const o = objects[i];
+
+
+        o.y += o.speed;
+
+
+        o.rotation +=
+            o.type === "star"
+            ? 0.025
+            : 0.012;
+
+
+        /* TABRAKAN */
+
+        if (isColliding(o)) {
+
+            if (o.type === "star") {
+
+                score++;
+
+
+                document
+                    .getElementById("message")
+                    .textContent =
+                    "✨ Bintang tertangkap!";
+
+            }
+
+            else {
+
+                lives--;
+
+
+                document
+                    .getElementById("message")
+                    .textContent =
+                    "💥 Gangguan mengenai keranjang!";
+
+
+                if (lives <= 0) {
+
+                    gameOver();
+
+                }
+
+            }
+
+
+            objects.splice(i, 1);
+
+            updateStats();
+
+            continue;
+
+        }
+
+
+        /* OBJEK KELUAR LAYAR */
+
+        if (
+            o.y >
+            canvas.height + 50
+        ) {
+
+            objects.splice(i, 1);
+
+        }
+
+    }
+
+
+    /* GAMBAR */
+
+    drawBackground();
+
+
+    objects.forEach(
+        drawObject
+    );
+
+
+    drawPlayer();
+
+
+    animationId =
+        requestAnimationFrame(loop);
+
+}
+
+
+/* KEYBOARD */
+
+document.addEventListener(
+    "keydown",
+    function(e) {
+
+        keys[e.key] = true;
+
+
+        if (
+            e.key === "ArrowLeft" ||
+            e.key === "ArrowRight" ||
+            e.key === " "
+        ) {
+
+            e.preventDefault();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    function(e) {
+
+        keys[e.key] = false;
+
+    }
+);
+
+
+/* TOMBOL HP */
+
+function holdButton(id, key) {
+
+    const btn =
+        document.getElementById(id);
+
+
+    const down = function(e) {
+
+        e.preventDefault();
+
+        keys[key] = true;
+
+    };
+
+
+    const up = function(e) {
+
+        e.preventDefault();
+
+        keys[key] = false;
+
+    };
+
+
+    btn.addEventListener(
+        "pointerdown",
+        down
+    );
+
+
+    btn.addEventListener(
+        "pointerup",
+        up
+    );
+
+
+    btn.addEventListener(
+        "pointerleave",
+        up
+    );
+
+
+    btn.addEventListener(
+        "pointercancel",
+        up
+    );
+
+}
+
+
+holdButton(
+    "leftBtn",
+    "ArrowLeft"
+);
+
+
+holdButton(
+    "rightBtn",
+    "ArrowRight"
+);
+
+
+/* TAMPILAN AWAL */
+
+drawBackground();
+
+drawPlayer();
+
+</script>
+
+</body>
+</html>
