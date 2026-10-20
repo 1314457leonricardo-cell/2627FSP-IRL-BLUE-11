@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIBI AI - Smart Sign Language Translator</title>
+    
+    <!-- Pustaka MediaPipe untuk Ekstraksi Landmark Tangan (Computer Vision) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* Desain UI/UX Dipertahankan dari versi sebelumnya */
+        :root {
+            --primary: #0A192F; 
+            --accent: #00B4D8; 
+            --bg-light: #F4F7F6;
+            --text-dark: #333333;
+            --white: #FFFFFF;
+            --success: #2ECC71;
+            --warning: #F1C40F;
+            --danger: #E74C3C;
+            --border-radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+        
+        nav { background-color: var(--primary); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { color: var(--white); font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+        .logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 15px; }
+        .nav-links button { background: none; border: none; color: var(--white); font-size: 1rem; cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: background 0.3s; }
+        .nav-links button:hover, .nav-links button.active { background-color: rgba(0, 180, 216, 0.2); color: var(--accent); }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        section { display: none; animation: fadeIn 0.4s ease-in-out; }
+        section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--white); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h1, h2, h3 { margin-bottom: 15px; color: var(--primary); }
+        .btn { display: inline-block; padding: 10px 20px; background-color: var(--accent); color: var(--white); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; text-decoration: none; text-align: center; }
+        .btn:hover { background-color: #0096B4; }
+        .btn-outline { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+        .btn-danger { background-color: var(--danger); }
+
+        /* Revisi: Area Kamera dengan Canvas Overlay untuk Visualisasi CV */
+        .camera-container { position: relative; width: 100%; max-width: 640px; margin: 0 auto; background: #000; border-radius: var(--border-radius); overflow: hidden; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: 100%; object-fit: cover; display: none; transform: scaleX(-1); }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); pointer-events: none; display: none; }
+        .camera-placeholder { color: #fff; text-align: center; padding: 20px; }
+        
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; justify-content: center; }
+        select { padding: 10px; border-radius: 6px; border: 1px solid #ccc; flex-grow: 1; max-width: 300px; }
+        
+        .ai-status-badge { position: absolute; top: 15px; left: 15px; background: var(--warning); color: #000; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; z-index: 10; display: none; }
+        .ai-status-badge.active { background: var(--success); color: #fff; }
+        
+        .translation-result { margin-top: 20px; padding: 15px; background: #E8F8FA; border-left: 4px solid var(--accent); border-radius: 4px; font-size: 1.2rem; min-height: 80px; }
+        .confidence-bar { height: 4px; background: #ddd; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+        .confidence-level { height: 100%; background: var(--success); width: 0%; transition: width 0.3s; }
+
+        /* Revisi: Area Iframe Pembelajaran */
+        .iframe-container { width: 100%; height: 600px; border: 2px solid #eee; border-radius: var(--border-radius); overflow: hidden; margin-bottom: 15px; background: #f9f9f9; }
+        .iframe-container iframe { width: 100%; height: 100%; border: none; }
+        .iframe-fallback { padding: 15px; background: #FFF3CD; color: #856404; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .dict-card { background: var(--white); padding: 15px; border-radius: var(--border-radius); border: 1px solid #eee; text-align: center; }
+
+        @media (max-width: 768px) {
+            .nav-links { flex-wrap: wrap; justify-content: center; gap: 5px; }
+            .nav-links button { font-size: 0.9rem; padding: 6px 10px; }
+            .camera-container { aspect-ratio: 3/4; }
+            .iframe-container { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="navTo('beranda')">SIBI<span>.AI</span></div>
+        <div class="nav-links">
+            <button onclick="navTo('beranda')" id="nav-beranda" class="active">Beranda</button>
+            <button onclick="navTo('penerjemah')" id="nav-penerjemah">Penerjemah Kamera</button>
+            <button onclick="navTo('kamus')" id="nav-kamus">Belajar SIBI</button>
+            <button onclick="navTo('tentang')" id="nav-tentang">Tentang Sistem</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- BERANDA -->
+        <section id="beranda" class="active">
+            <div class="card" style="text-align: center; padding: 50px 20px;">
+                <h1>Ekosistem Penerjemah Sistem Isyarat Bahasa Indonesia (SIBI)</h1>
+                <p style="margin-bottom: 30px; font-size: 1.1rem; color: #666;">Platform Computer Vision terintegrasi untuk mengenali SIBI dan menghubungkan pengguna dengan media pembelajaran resmi Kemendikdasmen.</p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" onclick="navTo('penerjemah')">Mulai Deteksi Kamera</button>
+                    <button class="btn btn-outline" onclick="navTo('kamus')">Buka Materi SIBI Resmi</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PENERJEMAH -->
+        <section id="penerjemah">
+            <div class="card">
+                <h2>Penerjemah SIBI ke Teks (Pipeline Computer Vision)</h2>
+                <p style="margin-bottom: 15px; font-size: 0.9rem; color: #555;">Posisikan tangan Anda di depan kamera. Sistem menggunakan MediaPipe Hand Landmarker untuk ekstraksi fitur visual.</p>
+                
+                <div class="camera-container">
+                    <div class="ai-status-badge" id="aiBadge">Memuat Model Deteksi...</div>
+                    <div class="camera-placeholder" id="camPlaceholder">
+                        Kamera nonaktif.<br>Klik "Mulai Kamera" untuk meminta izin akses.
+                    </div>
+                    <!-- Video input tersembunyi, digambar ulang di Canvas -->
+                    <video id="videoElement" autoplay playsinline></video>
+                    <!-- Canvas untuk visualisasi Landmark Tangan -->
+                    <canvas class="output_canvas" id="outputCanvas"></canvas>
+                </div>
+
+                <div class="controls">
+                    <select id="cameraSelect" disabled>
+                        <option value="">Memuat perangkat kamera...</option>
+                    </select>
+                    <button class="btn" id="startCamBtn" onclick="startSelectedCamera()">Mulai Kamera</button>
+                    <button class="btn btn-danger" id="stopCamBtn" onclick="stopCamera()" style="display: none;">Hentikan</button>
+                </div>
+
+                <div class="translation-result">
+                    <strong style="color: var(--primary);">Status Pengenalan Model SIBI:</strong>
+                    <div id="resultText" style="margin-top: 5px; font-weight: 500; color: #555;">-</div>
+                    <div class="confidence-bar"><div class="confidence-level" id="confidenceLevel"></div></div>
+                </div>
+                <div style="text-align: right; margin-top: 10px;">
+                    <span style="font-size: 0.8rem; color: #888; float: left; margin-top: 8px;" id="fpsCounter">FPS: 0</span>
+                    <button class="btn btn-outline" onclick="resetTranslation()" style="padding: 5px 10px; font-size: 0.9rem;">Hapus Riwayat</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- KAMUS & BELAJAR SIBI RESMI -->
+        <section id="kamus">
+            <div class="card">
+                <h2>Media Belajar SIBI Resmi</h2>
+                <p style="margin-bottom: 15px;">Materi pembelajaran terintegrasi langsung dari situs resmi <strong>Kementerian Pendidikan Dasar dan Menengah RI (Kemendikdasmen)</strong>.</p>
+                
+                <div class="iframe-fallback">
+                    ⚠️ Jika website SIBI menolak untuk ditampilkan di dalam bingkai ini (karena kebijakan keamanan server <em>X-Frame-Options</em>), silakan buka portal resmi melalui tombol di bawah.
+                </div>
+                
+                <a href="https://pkplk.kemendikdasmen.go.id/sibi/" target="_blank" class="btn" style="margin-bottom: 20px; display: block;">Buka Portal SIBI Resmi di Tab Baru</a>
+
+                <div class="iframe-container">
+                    <!-- Referensi resmi Kemendikdasmen -->
+                    <iframe src="https://pkplk.kemendikdasmen.go.id/sibi/" title="Kamus SIBI Kemendikbud"></iframe>
+                </div>
+
+                <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+                <h3>Kamus SIBI Lokal (Fallback Mode)</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Daftar kosakata dasar yang tersimpan di memori lokal saat koneksi internet terbatas.</p>
+                <div class="grid-container" id="dictContainer">
+                    <!-- Kosakata SIBI dirender melalui JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TENTANG -->
+        <section id="tentang">
+            <div class="card">
+                <h2>Arsitektur Sistem (Versi Revisi SIBI AI)</h2>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                    <li><strong>Computer Vision Pipeline:</strong> Telah diimplementasikan menggunakan <code>@mediapipe/hands</code>. Menangkap frame, merender kanvas overlay, mengekstrak kordinat landmark (21 titik per tangan).</li>
+                    <li><strong>Stabilisasi Prediksi (Smoothing):</strong> Sistem menggunakan buffer (antrean multi-frame) untuk mencegah perubahan prediksi yang berkedip/terlalu cepat (flickering).</li>
+                    <li><strong>Pengenalan Model (Klasifikasi):</strong> Saat ini sistem dapat mendeteksi "Tangan Terbuka" dan "Tangan Tertutup" berdasarkan rumus heuristik jarak landmark untuk demonstrasi pipeline. Model Deep Learning berformat `.tflite` atau `tfjs` yang dilatih menggunakan dataset SIBI dapat diinjeksi pada fungsi <code>predictSIBI(landmarks)</code>.</li>
+                    <li><strong>Integrasi API Kamera:</strong> Mendukung pengalihan stream antar Webcam USB eksternal secara dinamis dan aman tanpa *memory leak*.</li>
+                </ul>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- 1. NAVIGASI SPA ---
+        function navTo(pageId) {
+            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            document.getElementById('nav-' + pageId).classList.add('active');
+
+            if(pageId !== 'penerjemah') stopCamera();
+        }
+
+        // --- 2. SISTEM KAMERA EKSTERNAL (WebRTC) ---
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('outputCanvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const cameraSelect = document.getElementById('cameraSelect');
+        const camPlaceholder = document.getElementById('camPlaceholder');
+        const aiBadge = document.getElementById('aiBadge');
+        
+        let currentStream = null;
+        let isProcessing = false;
+        let lastFrameTime = 0;
+        let frameCount = 0;
+        let fps = 0;
+
+        async function getCameras() {
+            try {
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                cameraSelect.innerHTML = ''; 
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Kamera ${index + 1} (Eksternal/Bawaan)`;
+                    cameraSelect.appendChild(option);
+                });
+                cameraSelect.disabled = false;
+                tempStream.getTracks().forEach(track => track.stop());
+            } catch (err) {
+                cameraSelect.innerHTML = '<option value="">Izin kamera ditolak / Tidak tersedia</option>';
+            }
+        }
+
+        // --- 3. PIPELINE COMPUTER VISION (MediaPipe) ---
+        const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        }});
+        
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1, // 0 lebih cepat (untuk HP), 1 lebih akurat
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
+        });
+        
+        hands.onResults(onCVResults);
+
+        async function startSelectedCamera() {
+            if (currentStream) stopCamera();
+
+            const deviceId = cameraSelect.value;
+            try {
+                camPlaceholder.innerText = "Memulai perangkat keras kamera...";
+                currentStream = await navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: deviceId ? { exact: deviceId } : undefined, width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                
+                videoElement.srcObject = currentStream;
+                videoElement.style.display = 'block';
+                canvasElement.style.display = 'block';
+                camPlaceholder.style.display = 'none';
+                document.getElementById('startCamBtn').style.display = 'none';
+                document.getElementById('stopCamBtn').style.display = 'inline-block';
+                
+                aiBadge.style.display = 'block';
+                aiBadge.className = 'ai-status-badge active';
+                aiBadge.innerText = 'Pipeline CV Aktif: Ekstraksi Landmark';
+
+                // Sinkronisasi ukuran canvas dengan video setelah metadata dimuat
+                videoElement.onloadedmetadata = () => {
+                    canvasElement.width = videoElement.videoWidth;
+                    canvasElement.height = videoElement.videoHeight;
+                    isProcessing = true;
+                    processVideoFrame(); 
+                };
+
+            } catch (err) {
+                console.error(err);
+                camPlaceholder.innerText = "Gagal mengakses kamera. Periksa izin atau kabel USB.";
+            }
+        }
+
+        function stopCamera() {
+            isProcessing = false;
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            videoElement.style.display = 'none';
+            canvasElement.style.display = 'none';
+            camPlaceholder.style.display = 'block';
+            camPlaceholder.innerHTML = "Kamera nonaktif.<br>Klik 'Mulai Kamera' untuk melanjutkan.";
+            document.getElementById('startCamBtn').style.display = 'inline-block';
+            document.getElementById('stopCamBtn').style.display = 'none';
+            aiBadge.style.display = 'none';
+            resetTranslation();
+        }
+
+        // Loop asinkron untuk mengirim frame ke model
+        async function processVideoFrame() {
+            if (!isProcessing) return;
+            
+            // Hitung FPS
+            const now = performance.now();
+            frameCount++;
+            if (now - lastFrameTime >= 1000) {
+                document.getElementById('fpsCounter').innerText = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFrameTime = now;
+            }
+
+            await hands.send({image: videoElement});
+            requestAnimationFrame(processVideoFrame);
+        }
+
+        // --- 4. LOGIKA PENGOLAHAN HASIL DAN STABILISASI ---
+        let predictionBuffer = [];
+        const BUFFER_SIZE = 10; // Jumlah frame untuk menstabilkan prediksi
+
+        function onCVResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            // Gambar frame video di canvas (diperlukan karena video disembunyikan di balik canvas)
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                // Iterasi setiap tangan yang terdeteksi
+                for (const landmarks of results.multiHandLandmarks) {
+                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00B4D8', lineWidth: 3});
+                    drawLandmarks(canvasCtx, landmarks, {color: '#F1C40F', lineWidth: 1, radius: 3});
+                }
+                
+                // EKSTRAKSI FITUR: Kirim landmark tangan pertama ke model pengenalan SIBI
+                const rawPrediction = predictSIBI(results.multiHandLandmarks[0]);
+                stabilizePrediction(rawPrediction);
+                
+            } else {
+                stabilizePrediction("Tidak ada tangan terdeteksi");
+                document.getElementById('confidenceLevel').style.width = '0%';
+            }
+            canvasCtx.restore();
+        }
+
+        // FUNGSI INJEKSI MODEL SIBI (Placeholder/Demonstrasi Heuristik)
+        function predictSIBI(landmarks) {
+            // Dalam implementasi nyata, ubah landmark menjadi tensor dan masukkan ke tf.keras model di sini.
+            // Saat ini menggunakan aturan matematika dasar (Heuristik) untuk mendeteksi posisi dasar jari untuk mendemonstrasikan pipeline tanpa fake-data.
+            
+            const wrist = landmarks[0];
+            const middleFingerTip = landmarks[12];
+            
+            // Hitung jarak vertikal antara pergelangan dan ujung jari tengah
+            const distance = Math.abs(wrist.y - middleFingerTip.y);
+            
+            if (distance > 0.3) {
+                return "Model SIBI Diperlukan (Fitur: Tangan Terbuka Terdeteksi)";
+            } else {
+                return "Model SIBI Diperlukan (Fitur: Tangan Tertutup Terdeteksi)";
+            }
+        }
+
+        // ALGORITMA STABILISASI (Mencegah teks berkedip cepat)
+        function stabilizePrediction(newPrediction) {
+            predictionBuffer.push(newPrediction);
+            if (predictionBuffer.length > BUFFER_SIZE) predictionBuffer.shift();
+
+            // Hitung label yang paling sering muncul di buffer
+            const counts = {};
+            let maxCount = 0;
+            let stablePrediction = "-";
+
+            for (const label of predictionBuffer) {
+                counts[label] = (counts[label] || 0) + 1;
+                if (counts[label] > maxCount) {
+                    maxCount = counts[label];
+                    stablePrediction = label;
+                }
+            }
+
+            // Tampilkan hasil jika memenuhi ambang batas keyakinan kestabilan
+            const confidence = (maxCount / BUFFER_SIZE) * 100;
+            document.getElementById('confidenceLevel').style.width = `${confidence}%`;
+            
+            if (confidence >= 60) {
+                document.getElementById('resultText').innerText = stablePrediction;
+            }
+        }
+
+        function resetTranslation() {
+            document.getElementById('resultText').innerText = '-';
+            predictionBuffer = [];
+            document.getElementById('confidenceLevel').style.width = '0%';
+        }
+
+        // --- 5. DATA FALLBACK SIBI LOKAL ---
+        const dictionaryData = [
+            { word: "A", desc: "Tangan mengepal, ibu jari lurus di samping telunjuk." },
+            { word: "B", desc: "Empat jari lurus ke atas rapat, ibu jari ditekuk ke dalam telapak." },
+            { word: "C", desc: "Tangan melengkung membentuk huruf C dari samping." },
+            { word: "Saya", desc: "Menunjuk dada sendiri dengan jari telunjuk." }
+        ];
+
+        function renderDictionary() {
+            const container = document.getElementById('dictContainer');
+            container.innerHTML = '';
+            dictionaryData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'dict-card';
+                card.innerHTML = `
+                    <h3 style="margin-bottom: 5px;">${item.word}</h3>
+                    <p style="font-size: 0.9rem; color: #666;">${item.desc}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.onload = () => {
+            renderDictionary();
+            getCameras();
+        };
+    </script>
+</body>
+</html>
