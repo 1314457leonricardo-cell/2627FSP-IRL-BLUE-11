@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAKER. | A Tool Made To Leave A Mark</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #EFE9DD;
+      --bg-sec: #E5DED0;
+      --ink-pri: #141C2B;
+      --ink-sec: #4A5364;
+      --text-mute: #767E8C;
+      --accent-blue: #2C4A8F;
+      --hairline: rgba(20, 28, 43, 0.16);
+      --nav-height: 58px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0 !important;
+      box-shadow: none;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--ink-pri);
+      font-family: 'Courier Prime', monospace;
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 1.9;
+      letter-spacing: 0.07em;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .serif {
+      font-family: 'Newsreader', serif;
+      letter-spacing: -0.02em;
+      font-weight: 400;
+      line-height: 1.1;
+    }
+
+    em {
+      font-style: italic;
+      color: var(--accent-blue);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    a:hover, button:hover { color: var(--accent-blue); }
+
+    button {
+      background: none;
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      color: inherit;
+      font-size: inherit;
+      letter-spacing: inherit;
+      text-transform: uppercase;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 4vw;
+    }
+
+    .hairline-top { border-top: 1px solid var(--hairline); }
+    .hairline-bottom { border-bottom: 1px solid var(--hairline); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border: 1px solid var(--ink-pri);
+      text-transform: uppercase;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--ink-pri);
+      color: var(--bg-main);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: var(--bg-main);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--nav-height);
+      background-color: rgba(239, 233, 221, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4vw;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .logo {
+      font-size: 19px;
+      font-weight: 500;
+      color: var(--ink-pri);
+    }
+
+    .logo span { color: var(--accent-blue); }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-links a { text-transform: uppercase; }
+
+    .btn-square {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--ink-pri);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .hero {
+      background-color: var(--bg-sec);
+      min-height: calc(100vh - var(--nav-height));
+      margin-top: var(--nav-height);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 8vh;
+      width: 100%;
+      max-width: 46vw;
+    }
+
+    .kicker {
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 4.6vw, 68px);
+      margin-bottom: 32px;
+    }
+
+    .hero-lede {
+      max-width: 380px;
+      margin-bottom: 48px;
+    }
+
+    .hero-actions { display: flex; gap: 16px; }
+
+    .hero-specs {
+      margin-top: auto;
+      padding: 16px 0;
+      display: flex;
+      justify-content: space-between;
+      text-transform: uppercase;
+      font-size: 10px;
+      color: var(--ink-sec);
+      position: relative;
+      z-index: 2;
+    }
+
+    .wordmark-spread {
+      display: flex;
+      justify-content: space-between;
+      width: 110%;
+      margin-left: -5%;
+      font-size: clamp(80px, 18vw, 240px);
+      line-height: 0.7;
+      color: var(--bg-main);
+      transform: translateY(20%);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .editorial-section { padding: 120px 0; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6vw;
+    }
+
+    .editorial-heading {
+      font-size: clamp(32px, 3.5vw, 48px);
+      max-width: 90%;
+    }
+
+    .label-blue {
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      width: 120px;
+      flex-shrink: 0;
+    }
+
+    .row-desc {
+      flex: 1;
+      color: var(--ink-sec);
+    }
+
+    .row-val {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .demonstration {
+      padding: 80px 0;
+      background-color: var(--bg-sec);
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .demo-header h2 {
+      font-size: clamp(32px, 3.5vw, 48px);
+      margin-bottom: 24px;
+    }
+
+    .variant-picker {
+      display: inline-flex;
+      border: 1px solid var(--ink-pri);
+    }
+
+    .variant-picker button {
+      padding: 8px 24px;
+      border-right: 1px solid var(--ink-pri);
+    }
+
+    .variant-picker button:last-child { border-right: none; }
+
+    .variant-picker button[aria-pressed="true"] {
+      background-color: var(--ink-pri);
+      color: var(--bg-main);
+    }
+
+    .demo-panel {
+      border: 1px solid var(--hairline);
+      background-color: var(--bg-main);
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .demo-svg-container {
+      width: 80%;
+      height: 60%;
+    }
+
+    .draw-path {
+      fill: none;
+      stroke: var(--accent-blue);
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+      transition: stroke-width 0.4s ease;
+    }
+
+    .demo-specs {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--hairline);
+      padding-top: 16px;
+      text-transform: uppercase;
+    }
+
+    .demo-specs span { color: var(--ink-sec); }
+
+    .measurements { padding: 80px 0; }
+
+    .measurement-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .measurement-row:first-child {
+      border-top: 1px solid var(--hairline);
+    }
+
+    .meas-left {
+      display: flex;
+      gap: 48px;
+      width: 50%;
+    }
+
+    .meas-label {
+      color: var(--ink-pri);
+      width: 80px;
+    }
+
+    .meas-desc { color: var(--ink-sec); }
+
+    .meas-val {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .close-section {
+      padding-top: 120px;
+      text-align: center;
+      background-color: var(--bg-sec);
+      overflow: hidden;
+    }
+
+    .close-section h2 {
+      font-size: clamp(36px, 4.5vw, 64px);
+      max-width: 800px;
+      margin: 0 auto 32px;
+    }
+
+    .close-fineprint {
+      color: var(--text-mute);
+      margin-bottom: 48px;
+    }
+
+    .close-footer {
+      margin-top: 80px;
+      border-top: 1px solid var(--hairline);
+      padding-top: 32px;
+    }
+
+    #travelling-product {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 140px;
+      z-index: 50;
+      pointer-events: none;
+      filter: drop-shadow(4px 8px 12px rgba(20, 28, 43, 0.15));
+      transform-origin: center center;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .hero-content { max-width: 90vw; }
+
+      .nav-links { display: none; }
+
+      .meas-left {
+        width: 70%;
+        gap: 16px;
+      }
+
+      #travelling-product { width: 100px; }
+    }
+
+    @media (max-width: 600px) {
+      body { font-size: 11px; }
+
+      .hero-specs,
+      .demo-specs {
+        flex-wrap: wrap;
+        gap: 8px 20px;
+      }
+
+      .hero-actions {
+        flex-wrap: wrap;
+      }
+
+      .variant-picker button {
+        padding: 8px 12px;
+      }
+
+      .measurement-row {
+        gap: 20px;
+      }
+
+      .meas-left {
+        width: auto;
+        flex: 1;
+      }
+
+      .meas-desc { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #travelling-product { display: none !important; }
+
+      .wordmark-spread {
+        transform: translateY(0) !important;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="#" class="logo serif">MAKER<span>.</span></a>
+
+    <div class="nav-links">
+      <a href="#argument">Argument</a>
+      <a href="#demonstration">Demonstration</a>
+      <a href="#material">Material</a>
+      <a href="#measurements">Measurements</a>
+      <button class="btn-square" aria-label="More">+</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-content">
+        <div class="kicker">OBJECT / 01</div>
+
+        <h1>
+          A TOOL MADE TO <br>
+          <em>LEAVE A MARK.</em>
+        </h1>
+
+        <p class="hero-lede">
+          Engineered with precision for the purist. A singular physical object
+          designed to translate thought onto paper without friction or failure.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary">Acquire</button>
+          <button class="btn btn-outline">Details</button>
+        </div>
+      </div>
+
+      <div class="hero-specs hairline-top">
+        <span>MATERIAL / BRASS</span>
+        <span>WEIGHT / 24 G</span>
+        <span>WIDTH / 12 MM</span>
+        <span>ORIGIN / STUDIO</span>
+      </div>
+
+      <div class="wordmark-spread serif" id="hero-wordmark">
+        <span>M</span><span>A</span><span>K</span><span>E</span><span>R</span><span>.</span>
+      </div>
+    </section>
+
+    <section id="argument" class="editorial-section container">
+      <div class="grid-2">
+        <h2 class="editorial-heading">
+          Refined through iteration, <em>built for a lifetime.</em>
+        </h2>
+
+        <div>
+          <p style="margin-bottom: 40px; color: var(--ink-sec);">
+            Every curve and weight distribution has been calculated to balance
+            perfectly in the hand. No unnecessary features, only the essentials
+            required for daily, reliable use.
+          </p>
+
+          <div class="row hairline-top">
+            <span class="label-blue">01</span>
+            <span class="row-desc">HAND FINISHED</span>
+            <span class="row-val">100%</span>
+          </div>
+
+          <div class="row">
+            <span class="label-blue">02</span>
+            <span class="row-desc">REFINED FOR DAILY USE</span>
+            <span class="row-val">12 MM</span>
+          </div>
+
+          <div class="row">
+            <span class="label-blue">03</span>
+            <span class="row-desc">BUILT TO LAST</span>
+            <span class="row-val">3 PARTS</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="demonstration" class="demonstration">
+      <div class="container">
+        <div class="demo-header">
+          <h2 class="serif">
+            Observe the <em>frictionless</em> output.
+          </h2>
+
+          <div class="variant-picker" id="variant-picker">
+            <button aria-pressed="false" data-variant="fine" data-width="1.5" data-pressure="FIRM">FINE</button>
+            <button aria-pressed="true" data-variant="medium" data-width="3" data-pressure="MODERATE">MEDIUM</button>
+            <button aria-pressed="false" data-variant="bold" data-width="5.5" data-pressure="LIGHT">BOLD</button>
+          </div>
+        </div>
+
+        <div class="demo-panel">
+          <div class="demo-svg-container">
+            <svg viewBox="0 0 500 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+              <path
+                class="draw-path"
+                d="M 50,150 C 150,150 100,50 200,50 C 300,50 250,150 350,150 C 450,150 400,50 480,80"
+                stroke-width="3"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div class="demo-specs">
+          <span>TIP / <span id="spec-tip">0.5 MM</span></span>
+          <span>LINE / <span id="spec-line">MEDIUM</span></span>
+          <span>PRESSURE / <span id="spec-pressure">MODERATE</span></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="material" class="editorial-section container">
+      <div class="grid-2">
+        <h2 class="editorial-heading">
+          Substance dictates <em>form.</em>
+        </h2>
+
+        <div>
+          <p style="margin-bottom: 40px; color: var(--ink-sec);">
+            Machined from solid bar stock, the object gains a natural patina
+            through interaction with the user's hands. The raw finish is
+            intentional, celebrating the material's innate properties over time.
+          </p>
+
+          <div class="row hairline-top">
+            <span class="label-blue">BODY</span>
+            <span class="row-desc">Raw Uncoated Brass</span>
+            <span class="row-val">CZ121</span>
+          </div>
+
+          <div class="row">
+            <span class="label-blue">MECHANISM</span>
+            <span class="row-desc">Stainless Steel Core</span>
+            <span class="row-val">316L</span>
+          </div>
+
+          <div class="row">
+            <span class="label-blue">TOLERANCE</span>
+            <span class="row-desc">Machining Precision</span>
+            <span class="row-val">±0.05 MM</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="measurements" class="measurements container">
+      <div class="measurement-row">
+        <div class="meas-left">
+          <span class="meas-label">LENGTH</span>
+          <span class="meas-desc">Overall body length</span>
+        </div>
+        <span class="meas-val">148 MM</span>
+      </div>
+
+      <div class="measurement-row">
+        <div class="meas-left">
+          <span class="meas-label">WIDTH</span>
+          <span class="meas-desc">Maximum diameter</span>
+        </div>
+        <span class="meas-val">12 MM</span>
+      </div>
+
+      <div class="measurement-row">
+        <div class="meas-left">
+          <span class="meas-label">WEIGHT</span>
+          <span class="meas-desc">Finished object</span>
+        </div>
+        <span class="meas-val">24 G</span>
+      </div>
+    </section>
+
+    <section class="close-section container">
+      <h2>
+        MADE FOR THE MOMENT BETWEEN <br>
+        <em>THOUGHT AND MARK.</em>
+      </h2>
+
+      <p class="close-fineprint">
+        Edition 01 — Designed and assembled in the studio.
+      </p>
+
+      <div class="hero-actions" style="justify-content: center;">
+        <button class="btn btn-primary">Acquire</button>
+        <button class="btn btn-outline" id="back-to-top">Back to Top</button>
+      </div>
+
+      <div class="close-footer">
+        <div
+          class="wordmark-spread serif"
+          style="transform: translateY(22%); margin-bottom: 0;"
+        >
+          <span>M</span><span>A</span><span>K</span><span>E</span><span>R</span><span>.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <svg id="travelling-product" viewBox="0 0 40 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="12" y="10" width="16" height="50" fill="#141C2B" />
+    <rect x="10" y="55" width="20" height="5" fill="#2C4A8F" />
+    <rect x="28" y="15" width="3" height="35" fill="#4A5364" />
+    <path d="M 31,45 L 34,48 L 31,50 Z" fill="#4A5364"/>
+    <rect x="12" y="60" width="16" height="180" fill="#141C2B" />
+    <path d="M 12,240 L 16,280 L 24,280 L 28,240 Z" fill="#141C2B" />
+    <rect x="16" y="280" width="8" height="4" fill="#4A5364" />
+    <line x1="12" y1="60" x2="28" y2="60" stroke="#E5DED0" stroke-width="0.5"/>
+    <line x1="12" y1="240" x2="28" y2="240" stroke="#E5DED0" stroke-width="0.5"/>
+  </svg>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const buttons = document.querySelectorAll("#variant-picker button");
+      const drawPath = document.querySelector(".draw-path");
+      const specTip = document.getElementById("spec-tip");
+      const specLine = document.getElementById("spec-line");
+      const specPressure = document.getElementById("spec-pressure");
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          buttons.forEach(b => b.setAttribute("aria-pressed", "false"));
+          btn.setAttribute("aria-pressed", "true");
+
+          const width = btn.getAttribute("data-width");
+          const variantName = btn.getAttribute("data-variant").toUpperCase();
+          const pressure = btn.getAttribute("data-pressure");
+
+          drawPath.style.strokeWidth = width;
+          specLine.textContent = variantName;
+          specPressure.textContent = pressure;
+
+          if (variantName === "FINE") {
+            specTip.textContent = "0.3 MM";
+          } else if (variantName === "MEDIUM") {
+            specTip.textContent = "0.5 MM";
+          } else {
+            specTip.textContent = "0.8 MM";
+          }
+        });
+      });
+
+      const pathLength = drawPath.getTotalLength();
+
+      drawPath.style.strokeDasharray = pathLength;
+      drawPath.style.strokeDashoffset = pathLength;
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const prefersReducedMotion =
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+          if (entry.isIntersecting) {
+            if (prefersReducedMotion) {
+              drawPath.style.strokeDashoffset = "0";
+            } else {
+              drawPath.style.transition =
+                "stroke-dashoffset 2s cubic-bezier(0.4, 0, 0.2, 1), stroke-width 0.4s ease";
+              drawPath.getBoundingClientRect();
+              drawPath.style.strokeDashoffset = "0";
+            }
+
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      observer.observe(document.querySelector(".demo-panel"));
+
+      const product = document.getElementById("travelling-product");
+      const heroWordmark = document.getElementById("hero-wordmark");
+
+      const mapRange = (value, inMin, inMax, outMin, outMax) => {
+        return ((value - inMin) * (outMax - outMin)) /
+          (inMax - inMin) + outMin;
+      };
+
+      const handleScroll = () => {
+        const prefersReducedMotion =
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        if (prefersReducedMotion) return;
+
+        const scrollY = window.scrollY;
+        const maxScrollable =
+          document.documentElement.scrollHeight - window.innerHeight;
+
+        const scrollMax = Math.min(Math.max(maxScrollable, 1), 2000);
+
+        let scrollPercent = (scrollY / scrollMax) * 100;
+        scrollPercent = Math.max(0, Math.min(scrollPercent, 100));
+
+        const wordmarkOffset =
+          mapRange(Math.min(scrollPercent, 20), 0, 20, 20, 0);
+
+        if (scrollPercent <= 20) {
+          heroWordmark.style.transform =
+            `translateY(${wordmarkOffset}%)`;
+        }
+
+        let x, y, rot, scale, opac;
+
+        if (scrollPercent <= 20) {
+          x = mapRange(scrollPercent, 0, 20, 70, 55);
+          y = mapRange(scrollPercent, 0, 20, 18, 30);
+          rot = mapRange(scrollPercent, 0, 20, -8, 4);
+          scale = mapRange(scrollPercent, 0, 20, 1, 0.95);
+          opac = 1;
+        } else if (scrollPercent <= 40) {
+          x = mapRange(scrollPercent, 20, 40, 55, 25);
+          y = mapRange(scrollPercent, 20, 40, 30, 45);
+          rot = mapRange(scrollPercent, 20, 40, 4, 12);
+          scale = mapRange(scrollPercent, 20, 40, 0.95, 0.85);
+          opac = 1;
+        } else if (scrollPercent <= 60) {
+          x = mapRange(scrollPercent, 40, 60, 25, 65);
+          y = mapRange(scrollPercent, 40, 60, 45, 58);
+          rot = mapRange(scrollPercent, 40, 60, 12, -5);
+          scale = mapRange(scrollPercent, 40, 60, 0.85, 0.72);
+          opac = 1;
+        } else if (scrollPercent <= 80) {
+          x = mapRange(scrollPercent, 60, 80, 65, 50);
+          y = mapRange(scrollPercent, 60, 80, 58, 70);
+          rot = mapRange(scrollPercent, 60, 80, -5, 0);
+          scale = mapRange(scrollPercent, 60, 80, 0.72, 0.6);
+          opac = mapRange(scrollPercent, 60, 80, 1, 0);
+        } else {
+          opac = 0;
+        }
+
+        if (opac > 0) {
+          product.style.opacity = opac;
+          product.style.visibility = "visible";
+          product.style.transform =
+            `translate(${x}vw, ${y}vh) rotate(${rot}deg) scale(${scale})`;
+        } else {
+          product.style.opacity = 0;
+          product.style.visibility = "hidden";
+        }
+      };
+
+      handleScroll();
+
+      let ticking = false;
+
+      window.addEventListener("scroll", () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            handleScroll();
+            ticking = false;
+          });
+
+          ticking = true;
+        }
+      }, { passive: true });
+
+      const backToTopBtn = document.getElementById("back-to-top");
+
+      if (backToTopBtn) {
+        backToTopBtn.addEventListener("click", () => {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+        });
+      }
+    });
+  </script>
+</body>
+</html>
