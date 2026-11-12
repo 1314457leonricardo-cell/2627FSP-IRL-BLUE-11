@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michelle Lemuel Pribadi | Curriculum Vitae</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0B1F3A;
+  --navy2: #173A6B;
+  --gold: #D4AF37;
+  --white: #F8FAFC;
+  --muted: #C7D2E2;
+  --line: rgba(212,175,55,.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg,#07172D,#173A6B);
+  color: var(--white);
+  line-height: 1.75;
+}
+
+.toolbar {
+  max-width: 950px;
+  margin: 0 auto 22px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn {
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: #172033;
+  padding: 11px 22px;
+  border-radius: 30px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+}
+
+.btn.secondary {
+  background: transparent;
+  color: var(--gold);
+}
+
+.cv {
+  max-width: 950px;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: #102847;
+  box-shadow: 0 20px 55px rgba(0,0,0,.3);
+}
+
+.hero {
+  padding: 42px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  background: linear-gradient(125deg,#09172D,#1B426F);
+}
+
+.photo {
+  width: 165px;
+  height: 165px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--gold);
+  background: #DCE4ED;
+  box-shadow: 0 8px 25px rgba(0,0,0,.3);
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-info {
+  min-width: 0;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(25px,4vw,39px);
+  line-height: 1.25;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.hero p {
+  color: var(--muted);
+  margin: 12px 0 0;
+  font-size: 15px;
+}
+
+.hero-line {
+  width: 65px;
+  height: 3px;
+  background: var(--gold);
+  margin-top: 17px;
+  border-radius: 5px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 285px minmax(0,1fr);
+}
+
+.side {
+  padding: 32px 27px;
+  background: rgba(0,0,0,.17);
+  min-width: 0;
+}
+
+.main {
+  padding: 32px 35px;
+  min-width: 0;
+}
+
+.section {
+  margin-bottom: 34px;
+  min-width: 0;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section h3 {
+  color: var(--gold);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  margin: 0 0 18px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.5;
+}
+
+.section p {
+  color: #E1E8F0;
+  font-size: 13.5px;
+  margin: 0 0 15px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.section p:last-child {
+  margin-bottom: 0;
+}
+
+.section strong,
+.section b {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 15px;
+  font-size: 12.5px;
+  color: #E1E8F0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.contact-icon {
+  color: var(--gold);
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 11px;
+  border: 1px solid rgba(212,175,55,.4);
+  background: rgba(212,175,55,.1);
+  color: #FFE8A3;
+  border-radius: 20px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.item {
+  padding-left: 15px;
+  border-left: 2px solid var(--gold);
+  margin: 0 0 23px;
+}
+
+.item:last-child {
+  margin-bottom: 0;
+}
+
+.item h4 {
+  margin: 0 0 7px;
+  color: #FFFFFF;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.item p {
+  margin: 0;
+}
+
+.footer {
+  text-align: center;
+  padding: 19px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  color: #AEBFD2;
+  font-size: 11px;
+  letter-spacing: .5px;
+}
+
+@media(max-width:700px) {
+  body {
+    padding: 12px;
+  }
+
+  .hero {
+    padding: 30px 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 18px;
+  }
+
+  .photo {
+    width: 140px;
+    height: 140px;
+  }
+
+  .hero-line {
+    margin: 16px auto 0;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .side,
+  .main {
+    padding: 25px 22px;
+  }
+
+  .section {
+    margin-bottom: 27px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    padding: 0;
+    background: white;
+    color: #172033;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .toolbar {
+    display: none !important;
+  }
+
+  .cv {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .hero {
+    padding: 25px;
+    break-inside: avoid;
+  }
+
+  .photo {
+    width: 125px;
+    height: 125px;
+  }
+
+  .grid {
+    grid-template-columns: 34% 66%;
+  }
+
+  .side,
+  .main {
+    padding: 22px 18px;
+  }
+
+  .section,
+  .item {
+    break-inside: avoid;
+  }
+
+  .section p {
+    font-size: 11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+  <button class="btn" onclick="downloadPDF()">📄 Download PDF</button>
+  <button class="btn secondary" onclick="window.print()">🖨️ Print CV</button>
+</div>
+
+<div class="cv" id="cv">
+
+  <header class="hero">
+    <div class="photo">
+      <img
+        src="foto-michelle.png"
+        alt="Foto Michelle Lemuel Pribadi"
+        onerror="this.style.display='none';this.parentElement.style.background='#DCE4ED';"
+      >
+    </div>
+
+    <div class="hero-info">
+      <h1>Michelle Lemuel Pribadi</h1>
+      <p>Siswi SMA BPK PENABUR Holis</p>
+      <div class="hero-line"></div>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <aside class="side">
+
+      <section class="section">
+        <h3>Kontak</h3>
+
+        <div class="contact-item">
+          <span class="contact-icon">☎</span>
+          <span>+62 877 1678 2156</span>
+        </div>
+
+        <div class="contact-item">
+          <span class="contact-icon">✉</span>
+          <span>2234060.michelle.lemuel@penabur.sch.id</span>
+        </div>
+
+        <div class="contact-item">
+          <span class="contact-icon">⌖</span>
+          <span>Bandung, Jawa Barat</span>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Bahasa</h3>
+        <div class="badges">
+          <span class="badge">Indonesia (Fluent)</span>
+          <span class="badge">English (Native)</span>
+          <span class="badge">Mandarin (HSK 1)</span>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Kemampuan</h3>
+        <div class="badges">
+          <span class="badge">Kooperatif</span>
+          <span class="badge">Ramah</span>
+          <span class="badge">Multitasking</span>
+          <span class="badge">Kerja Sama Tim</span>
+        </div>
+      </section>
+
+    </aside>
+
+    <main class="main">
+
+      <section class="section">
+        <h3>Tentang Saya</h3>
+        <p>
+          Saya berada di kelas 11 SMA BPK PENABUR Holis
+          dan ingin terus berkembang menjadi pribadi yang
+          lebih rajin, tekun, disiplin, serta mampu mengatur
+          waktu dengan baik dalam kegiatan akademik maupun
+          organisasi.
+        </p>
+      </section>
+
+      <section class="section">
+        <h3>Pengalaman Organisasi</h3>
+
+        <div class="item">
+          <h4>MPK (2021–2022)</h4>
+          <p>
+            Belajar mengenai kerja sama, kepemimpinan,
+            serta pengawasan dan evaluasi kinerja OSIS.
+          </p>
+        </div>
+
+        <div class="item">
+          <h4>Organisasi Gereja (2023–Sekarang)</h4>
+          <p>
+            Mengembangkan sikap ramah, sopan, disiplin,
+            serta tanggung jawab dalam melayani dan bekerja sama.
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Pendidikan</h3>
+
+        <div class="item">
+          <h4>SMA BPK PENABUR Holis</h4>
+          <p>2025–2028</p>
+        </div>
+
+        <div class="item">
+          <h4>SMP BPK PENABUR Holis</h4>
+          <p>2020–2023</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="footer">
+    MICHELLE LEMUEL PRIBADI · CURRICULUM VITAE
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+function downloadPDF() {
+  const cv = document.getElementById('cv');
+
+  if (window.html2pdf) {
+    html2pdf().set({
+      margin: 8,
+      filename: 'Michelle_Lemuel_Pribadi_CV.pdf',
+      image: {
+        type: 'jpeg',
+        quality: 0.98
+      },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait'
+      },
+      pagebreak: {
+        mode: ['css', 'legacy']
+      }
+    }).from(cv).save();
+  } else {
+    window.print();
+  }
+}
+</script>
+
+</body>
+</html>
